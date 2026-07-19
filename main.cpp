@@ -31,7 +31,7 @@ const piece pos_classic[64] = {
 
 struct board {
     std::set<int_fast64_t> hash_history;
-    piece pos[64];
+    mutable piece pos[64];
     int_fast32_t clock_halfmove = 0;
     // int_fast32_t clock_fullmove = 0;
     short enPass = -1;
@@ -57,12 +57,14 @@ struct board {
         short delta = c2 - c1;
         short h = delta % 8;
         short v = delta / 8;
+        bool color_of_moved_peice = (pos[c1] % 2) ^ 1;
+        if (clock_halfmove % 2 == 0 && color_of_moved_peice == 1) return false;
+        if (clock_halfmove % 2 == 1 && color_of_moved_peice == 0) return false;
+        if (h == 0 && v == 0) return false;
         switch (pos[c1]) {
             case p:
             case P:
                 if (v == 0) return false;
-                if (clock_halfmove % 2 == 0 && v > 0) return false;
-                if (clock_halfmove % 2 == 1 && v < 0) return false;
                 if (abs(v) > 2) return false;
                 if (h != 0) {
                     if (enPass == -1) return false;
@@ -72,17 +74,35 @@ struct board {
                     if (pos[c2] != E) return false;
                 }     
                 break;
+            case r:
+            case R:
+                if (h != 0 && v != 0) return false;
+                break;
             case n:
             case N:
+                if (abs(h) == 1) { 
+                    if (abs(v) != 2) return false;
+                    break;
+                } else if (abs(h) == 2) {
+                    if (abs(h) != 2) return false;
+                    break;
+                }
+                return false;
                 break;
             case b:
             case B:
+                if (abs(h) != abs(v)) return false;
+                if (abs(h == 0)) return false;
                 break;
             case q:
             case Q:
+                if (!(abs(h) == abs(v) || h == 0 || v == 0)) {
+                    return false;
+                }
                 break;
             case k:
             case K:
+                if (abs(h) > 1 || abs(v) > 1) return false;
                 break;
             default:
                 return false;
