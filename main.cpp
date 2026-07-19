@@ -62,6 +62,25 @@ struct board {
         if (!(c1 >= 1 && c1 <= 64) 
            &&(c2 >= 1 && c2 <= 65)) return false;
         if (pos[c1] == E) return false;
+        switch (pos[c1]) {
+            case p:
+            case P:    
+                break;
+            case n:
+            case N:
+                break;
+            case b:
+            case B:
+                break;
+            case q:
+            case Q:
+                break;
+            case k:
+            case K:
+
+            default:
+                return false;
+        }
         pos[c2] = pos[c1];
         pos[c1] = E;
         return true;
