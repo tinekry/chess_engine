@@ -18,6 +18,13 @@ enum cell {
     a2, b2, c2, d2, e2, f2, g2, h2, 
     a1, b1, c1, d1, e1, f1, g1, h1
 };
+int string_to_cell(const std::string& s) {
+    if (s.length() < 2) return -1; 
+    int file = s[0] - 'a';
+    int rank_idx = 8 - (s[1] - '0');
+
+    return (rank_idx * 8) + file;
+}
 const piece pos_classic[64] = {
     r, n, b, q, k, b, n, r,
     p, p, p, p, p, p, p, p,
@@ -28,7 +35,13 @@ const piece pos_classic[64] = {
     P, P, P, P, P, P, P, P,
     R, N, B, Q, K, B, N, R
 };
-
+void clear_screen() {
+#ifdef _WIN32
+    std::system("cls");   // Для Windows
+#else
+    std::system("clear"); // Для Linux / macOS
+#endif
+}
 struct board {
     std::set<int_fast64_t> hash_history;
     mutable piece pos[64];
@@ -72,7 +85,11 @@ struct board {
                     if (v != 1) return false;
                 } else {
                     if (pos[c2] != E) return false;
-                }     
+                    if (abs(v) == 2 && pos[(c1 + c2) / 2] != E) {   
+                        return false;
+                    }
+                }   
+                 
                 break;
             case r:
             case R:
@@ -129,22 +146,45 @@ struct board {
         std::cout << pieceNames[pc];
     }
     bool print() {
+        using std::cout;
+        cout << "   a b c d e f g h\n\n";
         for (int i = 0; i < 64; ++i) {
+            if (i % 8 == 0) cout << 8 - i/8 << "  ";
             print_piece(pos[i]);
-            if (i % 8 == 7) std::cout << '\n';
+            cout << " ";
+            if (i % 8 == 7) cout << '\n';
         }
+        cout << "\n   a b c d e f g h\n";
         return true;
     }
 };
+void wrong() {
+    std::cout << " You're an idiot, try again\n";
+}
 int main() {
-    using std::cout;
+    using std::cin, std::cout, std::string;
     board game;
     game.init_classic();
+    cout << " Game started\n";
+    cout << "move cell_1 cell_2\n";
+    cout << "Ex. move e2 e4\n";
+    cout << "To stop type 'EXIT' as first parametr\n";
     game.print();
-    // cout << " FLAG 1\n";
-    game.move(e2, e4);
-    
-    // cout << " FLAG 2\n";
-    game.print();
-    
+    while (true)
+    {
+        string s, c1, c2;
+        cin >> s >> c1 >> c2;
+        if (s == "EXIT") break;
+        if (s != "move" && s != "m") {
+            wrong();
+            continue;
+        }
+        if (game.move(string_to_cell(c1), string_to_cell(c2))) {
+            clear_screen();
+            game.print();
+        } else {
+            wrong();
+            continue;
+        }
+    }
 }
