@@ -33,7 +33,7 @@ struct rook : public piece {
 template <typename... Bases>
 struct board : public piece, public Bases... {
     std::vector<std::unique_ptr<piece>> adj;
-    std::vector<std::vector<int>> pos;
+    std::vector<std::vector<char>> pos;
     std::map<char, int> sbl_to_ptr;
     int_fast32_t clock_halfmove = 0;
     int  h, v, enPass, castle, num_of_colours;
@@ -74,12 +74,16 @@ struct board : public piece, public Bases... {
         if (!sbl_to_ptr.contains('P')) return false;
         if (!sbl_to_ptr.contains('p')) return false;
         int i = 0;
-        int j = 0;
-        for (;i < 64;) {
-            if (i < 43 && init[i] != '8' && init[i] != '/') {
-                int tmp = sbl_to_ptr[init[i]];
-                pos[7][0] = tmp;
-            }
+        for (int j = 0; i < 64; ++j) {
+            if (init[j] <= '9' && init[j] >= '1') {
+                i += (init[j]-'0');
+                ++j;
+            } else if (init[j] == '/') {
+                continue;
+            } else {
+                pos[i / 8][i % 8] = init[i];
+                ++i;
+            } 
         }
     }
     bool move(std::string c1, std::string c2) {
